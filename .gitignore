@@ -1,0 +1,41 @@
+# --- Build Artifacts ---
+Debug/
+Release/
+bin/
+obj/
+*.list
+*.map
+*.elf
+*.hex
+*.bin
+*.srec
+
+# --- STM32CubeIDE / Eclipse ---
+.settings/
+.launches/
+.externalToolBuilders/
+*.launch
+.gdbinit
+
+# --- VS Code ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# --- Unit Testing / C++ (for your Dispatcher) ---
+build/
+test-results/
+*.o
+*.a
+*.so
+*.out
+
+# --- OS / Miscellaneous ---
+.DS_Store
+Thumbs.db
+*.bak
+*.log
+*~
