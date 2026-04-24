@@ -18,6 +18,10 @@
 extern QueueHandle_t xQueue;
 extern SemaphoreHandle_t xMutex;
 
+static const uint32_t steps = 3;
+static const int16_t minServoAngleDeg = 0;
+static const int16_t maxServoAngleDeg = 180;
+
 BaseType_t ProcessAction(TargetData* targetData) {
 
 	//VL53L1X_ERROR status;
@@ -41,7 +45,7 @@ void SearchTask(void *pvParameters) {
 	// The task blocks every sensor delay (~140 ms)
 	int16_t angleDeg = minServoAngleDeg;
 
-	uint16_t stepAngleDeg = CalculateStepAngle(minServoAngleDeg, maxServoAngleDeg, 30);
+	int16_t stepAngleDeg = CalculateStepAngle(minServoAngleDeg, maxServoAngleDeg, 30);
 
 	VL53L1X_ERROR status;
 
@@ -55,7 +59,7 @@ void SearchTask(void *pvParameters) {
 
 		SetServoAngle(htim, channel, angleDeg);
 
-		status = VL53L1X_CheckForDataReady(VL53L1X_ADDRESS, isDataReady);
+		status = VL53L1X_CheckForDataReady(VL53L1X_ADDRESS, &isDataReady);
 
 		if (isDataReady) {
 
@@ -103,7 +107,7 @@ void TrackTask(void *pvParameters) {
 
 		GetTrackRangeDeg(angleDeg, &minRangeDeg, &maxRangeDeg);
 
-		uint16_t stepAngleDeg = CalculateStepAngle(minRangeDeg, maxRangeDeg, 3);
+		int16_t stepAngleDeg = CalculateStepAngle(minRangeDeg, maxRangeDeg, 3);
 
 		int s=0;
 

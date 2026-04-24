@@ -11,12 +11,6 @@
 #include <stdint.h>
 #include "radar_emulator_data.h"
 
-static const uint32_t steps = 3;
-
-static const int16_t minServoAngleDeg = 0;
-
-static const int16_t maxServoAngleDeg = 180;
-
 BaseType_t ProcessAction(TargetData* targetData);
 
 void SearchTask(void *pvParameters);

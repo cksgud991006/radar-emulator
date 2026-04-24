@@ -24,7 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <VL53L1X_api.h>
 #include <queue.h>
-#include <radar_emulator_sensor.h>
+#include "radar_emulator_sensor.h"
 #include <semphr.h>
 #include "angle.h"
 #include "radar_emulator_task.h"
@@ -51,9 +51,6 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart2;
-
-QueueHandle_t xQueue;
-SemaphoreHandle_t xMutex;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -103,8 +100,6 @@ int main(void)
 	// 84M / 200 = 42 KHz
 	// 42 KHz / 840 = 50 Hz sensor
 	const UBaseType_t bufferSize = 10;
-	const uint16_t sensorModeDefault = 2;
-	const uint16_t sensorTimingBudgetMs = 140;
 	const ServoConfig_t servo = {
 			.timerHandle = &htim2,
 		    .channel = TIM_CHANNEL_1
@@ -118,13 +113,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  xQueue = xQueueCreate(bufferSize, sizeof(TargetData));
-
+  QueueHandle_t xQueue = xQueueCreate(bufferSize, sizeof(TargetData));
+  /*
   uint8_t sensorState = 0;
   while (sensorState == 0) {
 	  sensorStatus = VL53L1X_BootState(VL53L1X_ADDRESS, &sensorState);
 	  HAL_Delay(2); // 1.2ms ~ 1.5ms to reach booted state
   }
+  */
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -140,12 +136,9 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  sensorStatus = VL53L1X_SensorInit(VL53L1X_ADDRESS);
-  sensorStatus = VL53L1X_SetDistanceMode(VL53L1X_ADDRESS, sensorModeDefault);
-  sensorStatus = VL53L1X_SetTimingBudgetInMs(VL53L1X_ADDRESS, sensorTimingBudgetMs);
-  sensorStatus = VL53L1X_StartRanging(VL53L1X_ADDRESS);
+  InitRadarEmulatorSensor();
 
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(servo.timerHandle, servo.channel);
 
   xTaskCreate(SearchTask, searchPCName, searchStackDepth, (void*)&servo, searchPriority, NULL);
   xTaskCreate(TrackTask, trackPCName, trackStackDepth, (void*)&servo, trackPriority, NULL);

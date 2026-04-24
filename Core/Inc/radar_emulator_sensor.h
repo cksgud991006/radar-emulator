@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+void InitRadarEmulatorSensor();
+
 uint16_t GetMaxRange(
 		uint16_t mode);
 

@@ -10,7 +10,7 @@
 void SetServoAngle(TIM_HandleTypeDef* htim, uint32_t channel, int16_t angleDeg) {
 	// map angle (0-180) to PWM (210 - 1050 counts)
 	// 210 for 0.5 ms (0 degrees) and 1050 for 2.5 ms (180 degrees)
-	uint32_t pulseLength = 210 + (angleDeg * (1080 - 210)/180);
+	uint32_t pulseLength = 210 + (angleDeg * (1050 - 210)/180);
 
 	__HAL_TIM_SET_COMPARE(htim, channel, pulseLength);
 }
