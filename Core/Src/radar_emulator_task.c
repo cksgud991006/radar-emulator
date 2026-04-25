@@ -15,12 +15,18 @@
 #include "radar_emulator_sensor.h"
 #include "radar_emulator_servo.h"
 
-extern QueueHandle_t xQueue;
-extern SemaphoreHandle_t xMutex;
-
+static const UBaseType_t bufferSize = 10;
 static const uint32_t steps = 3;
 static const int16_t minServoAngleDeg = 0;
 static const int16_t maxServoAngleDeg = 180;
+
+QueueHandle_t xQueue;
+SemaphoreHandle_t xMutex;
+
+void InitTask() {
+	xQueue = xQueueCreate(bufferSize, sizeof(TargetData));
+	xMutex = xSemaphoreCreateMutex();
+}
 
 BaseType_t ProcessAction(TargetData* targetData) {
 
@@ -46,6 +52,8 @@ void SearchTask(void *pvParameters) {
 	int16_t angleDeg = minServoAngleDeg;
 
 	int16_t stepAngleDeg = CalculateStepAngle(minServoAngleDeg, maxServoAngleDeg, 30);
+
+	uint32_t delay = CalculateServoDelay(stepAngleDeg);
 
 	VL53L1X_ERROR status;
 
@@ -76,9 +84,12 @@ void SearchTask(void *pvParameters) {
 
 		}
 
+		SetNextAngle(&angleDeg, &stepAngleDeg, minServoAngleDeg, maxServoAngleDeg);
 		xSemaphoreGive(xMutex);
-	}
 
+		// The task blocks every servo transit delay
+		vTaskDelay(delay);
+	}
 }
 
 void TrackTask(void *pvParameters) {
@@ -97,7 +108,7 @@ void TrackTask(void *pvParameters) {
 
 	for(;;) {
 
-		status = xQueueReceive(xQueue, &targetData, 0);
+		status = xQueueReceive(xQueue, &targetData, portMAX_DELAY);
 
 		int16_t angleDeg = targetData.angleDeg;
 
@@ -108,6 +119,8 @@ void TrackTask(void *pvParameters) {
 		GetTrackRangeDeg(angleDeg, &minRangeDeg, &maxRangeDeg);
 
 		int16_t stepAngleDeg = CalculateStepAngle(minRangeDeg, maxRangeDeg, 3);
+
+		uint32_t delay = CalculateServoDelay(stepAngleDeg);
 
 		int s=0;
 
@@ -120,6 +133,9 @@ void TrackTask(void *pvParameters) {
 			SetNextAngle(&angleDeg, &stepAngleDeg, minRangeDeg, maxRangeDeg);
 
 			++s;
+
+			// The task blocks every servo transit delay
+			vTaskDelay(delay);
 		}
 	}
 }

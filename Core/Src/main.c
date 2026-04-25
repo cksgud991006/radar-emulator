@@ -42,7 +42,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -99,12 +98,10 @@ int main(void)
 	// prescaler = 200, resolution = 840
 	// 84M / 200 = 42 KHz
 	// 42 KHz / 840 = 50 Hz sensor
-	const UBaseType_t bufferSize = 10;
-	const ServoConfig_t servo = {
+	static const ServoConfig_t servo = {
 			.timerHandle = &htim2,
-		    .channel = TIM_CHANNEL_1
+			.channel = TIM_CHANNEL_1
 	};
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -113,7 +110,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  QueueHandle_t xQueue = xQueueCreate(bufferSize, sizeof(TargetData));
+  InitTask();
   /*
   uint8_t sensorState = 0;
   while (sensorState == 0) {
@@ -136,7 +133,7 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  InitRadarEmulatorSensor();
+  //InitRadarEmulatorSensor();
 
   HAL_TIM_PWM_Start(servo.timerHandle, servo.channel);
 

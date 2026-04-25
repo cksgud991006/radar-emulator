@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include "radar_emulator_data.h"
 
+void InitTask();
+
 BaseType_t ProcessAction(TargetData* targetData);
 
 void SearchTask(void *pvParameters);
