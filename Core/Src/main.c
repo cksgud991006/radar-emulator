@@ -24,11 +24,11 @@
 /* USER CODE BEGIN Includes */
 #include <VL53L1X_api.h>
 #include <queue.h>
-#include "radar_emulator_sensor.h"
+#include <radar_emulator/config.h>
+#include <radar_emulator/sensor.h>
+#include <radar_emulator/task.h>
 #include <semphr.h>
-#include "angle.h"
-#include "radar_emulator_task.h"
-#include "radar_emulator_config.h"
+#include "radar_emulator/angle.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -75,6 +75,15 @@ void StartDefaultTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int _write(int file, char *ptr, int len)
+ {
+	 int DataIdx;
+	 for (DataIdx = 0; DataIdx < len; DataIdx++)
+	 {
+		 ITM_SendChar(*ptr++);
+	 }
+	 return len;
+ }
 /* USER CODE END 0 */
 
 /**
@@ -91,6 +100,7 @@ int main(void)
 	const uint16_t trackStackDepth = 1024;
 	const UBaseType_t searchPriority = 1;
 	const UBaseType_t trackPriority = 2;
+	const UBaseType_t logPriority = 1;
 	VL53L1X_ERROR sensorStatus;
 
 	// system clock = 84MHz
@@ -139,7 +149,7 @@ int main(void)
 
   xTaskCreate(SearchTask, searchPCName, searchStackDepth, (void*)&servo, searchPriority, NULL);
   xTaskCreate(TrackTask, trackPCName, trackStackDepth, (void*)&servo, trackPriority, NULL);
-
+  xTaskCreate(LogTask, searchPCName, searchStackDepth, NULL, searchPriority, NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */

@@ -5,7 +5,7 @@
  *      Author: Chanhyung Shim
  */
 
-#include "radar_emulator_servo.h"
+#include "radar_emulator/servo.h"
 
 void SetServoAngle(TIM_HandleTypeDef* htim, uint32_t channel, int16_t angleDeg) {
 	// map angle (0-180) to PWM (210 - 1050 counts)

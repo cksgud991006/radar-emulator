@@ -8,8 +8,8 @@
 #ifndef INC_RADAR_EMULATOR_TASK_H_
 #define INC_RADAR_EMULATOR_TASK_H_
 
+#include <radar_emulator/data.h>
 #include <stdint.h>
-#include "radar_emulator_data.h"
 
 void InitTask();
 

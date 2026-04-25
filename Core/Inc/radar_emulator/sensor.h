@@ -8,7 +8,7 @@
 #ifndef INC_RADAR_EMULATOR_SENSOR_H_
 #define INC_RADAR_EMULATOR_SENSOR_H_
 
-#include <radar_emulator_data.h>
+#include <radar_emulator/data.h>
 #include <stdbool.h>
 #include <stdint.h>
 

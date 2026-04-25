@@ -6,25 +6,29 @@
  */
 #include <FreeRTOS.h>
 #include <queue.h>
+#include <radar_emulator/config.h>
+#include <radar_emulator/sensor.h>
+#include <radar_emulator/servo.h>
+#include <radar_emulator/task.h>
+#include <radar_emulator/log.h>
 #include <semphr.h>
 
-#include "radar_emulator_task.h"
 #include "VL53L1X_api.h"
-#include "angle.h"
-#include "radar_emulator_config.h"
-#include "radar_emulator_sensor.h"
-#include "radar_emulator_servo.h"
+#include "radar_emulator/angle.h"
 
-static const UBaseType_t bufferSize = 10;
+static const UBaseType_t taskBufferSize = 10;
+static const UBaseType_t logBufferSize = 50;
 static const uint32_t steps = 3;
 static const int16_t minServoAngleDeg = 0;
 static const int16_t maxServoAngleDeg = 180;
 
-QueueHandle_t xQueue;
+QueueHandle_t xTaskQueue;
+QueueHandle_t xLogQueue;
 SemaphoreHandle_t xMutex;
 
 void InitTask() {
-	xQueue = xQueueCreate(bufferSize, sizeof(TargetData));
+	xTaskQueue = xQueueCreate(taskBufferSize, sizeof(TargetData));
+	xLogQueue = xQueueCreate(logBufferSize, sizeof(LogMessage_t));
 	xMutex = xSemaphoreCreateMutex();
 }
 
@@ -34,7 +38,7 @@ BaseType_t ProcessAction(TargetData* targetData) {
 	BaseType_t status;
 
 	if (IsTargetValid(targetData)) {
-		status = xQueueSendToFront(xQueue, (void*) targetData, 0);
+		status = xQueueSendToFront(xTaskQueue, (void*) targetData, portMAX_DELAY);
 		return status;
 	}
 
@@ -42,6 +46,8 @@ BaseType_t ProcessAction(TargetData* targetData) {
 }
 
 void SearchTask(void *pvParameters) {
+
+	LogMessage_t msg;
 
 	ServoConfig_t *config = (ServoConfig_t *)pvParameters;
 
@@ -57,7 +63,7 @@ void SearchTask(void *pvParameters) {
 
 	VL53L1X_ERROR status;
 
-	uint8_t isDataReady = 0;
+	uint8_t isDataReady = 1;
 
 	uint16_t distanceMm = 0;
 
@@ -80,11 +86,14 @@ void SearchTask(void *pvParameters) {
 
 			ProcessAction(&targetData);
 
+			Log_Format(&msg, "Radar Angle: %d degrees", angleDeg);
+
+			xQueueSend(xLogQueue, &msg, 0);
+
 			SetNextAngle(&angleDeg, &stepAngleDeg, minServoAngleDeg, maxServoAngleDeg);
 
 		}
 
-		SetNextAngle(&angleDeg, &stepAngleDeg, minServoAngleDeg, maxServoAngleDeg);
 		xSemaphoreGive(xMutex);
 
 		// The task blocks every servo transit delay
@@ -94,6 +103,8 @@ void SearchTask(void *pvParameters) {
 
 void TrackTask(void *pvParameters) {
 
+	LogMessage_t msg;
+
 	ServoConfig_t *config = (ServoConfig_t *)pvParameters;
 
 	TIM_HandleTypeDef* htim = config->timerHandle;
@@ -102,13 +113,15 @@ void TrackTask(void *pvParameters) {
 
 	uint32_t status;
 
+	uint8_t isDataReady = 0;
+
 	VL53L1X_ERROR sensorStatus;
 
 	TargetData targetData;
 
 	for(;;) {
 
-		status = xQueueReceive(xQueue, &targetData, portMAX_DELAY);
+		status = xQueueReceive(xTaskQueue, &targetData, portMAX_DELAY);
 
 		int16_t angleDeg = targetData.angleDeg;
 
@@ -128,12 +141,20 @@ void TrackTask(void *pvParameters) {
 
 			SetServoAngle(htim, channel, angleDeg);
 
-			sensorStatus = VL53L1X_GetDistance(VL53L1X_ADDRESS, &distanceMm);
+			status = VL53L1X_CheckForDataReady(VL53L1X_ADDRESS, &isDataReady);
 
-			SetNextAngle(&angleDeg, &stepAngleDeg, minRangeDeg, maxRangeDeg);
+			if (isDataReady) {
 
-			++s;
+				sensorStatus = VL53L1X_GetDistance(VL53L1X_ADDRESS, &distanceMm);
 
+				Log_Format(&msg, "Target Found: Angle=%d, Dist=%.2f", angleDeg, distanceMm);
+
+				xQueueSend(xLogQueue, &msg, 0);
+
+				SetNextAngle(&angleDeg, &stepAngleDeg, minRangeDeg, maxRangeDeg);
+
+				++s;
+			}
 			// The task blocks every servo transit delay
 			vTaskDelay(delay);
 		}
@@ -142,6 +163,16 @@ void TrackTask(void *pvParameters) {
 
 void LogTask(void) {
 
+	LogMessage_t log;
+
+	for(;;) {
+		if (xQueueReceive(xLogQueue, &log, portMAX_DELAY) == pdPASS) {
+			printf("[%lu] LVL%d: %s\r\n",
+					log.timestamp,
+					log.level,
+				    log.message);
+		}
+	}
 }
 
 void DeadlineCallback(void) {

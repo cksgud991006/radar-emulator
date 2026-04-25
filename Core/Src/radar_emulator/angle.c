@@ -5,10 +5,10 @@
  *      Author: Chanhyung Shim
  */
 
-#include "angle.h"
 #include <stdlib.h>
 #include <math.h>
-#include "radar_emulator_math.h"
+#include "radar_emulator/angle.h"
+#include "radar_emulator/math.h"
 
 int16_t CalculateStepAngle(int16_t angleL1Deg, int16_t angleL2Deg, uint32_t numTicks) {
 
