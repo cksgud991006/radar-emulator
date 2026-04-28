@@ -153,7 +153,7 @@ int main(void)
 
   xTaskCreate(SearchTask, searchPCName, searchStackDepth, (void*)&servo, searchPriority, NULL);
   xTaskCreate(TrackTask, trackPCName, trackStackDepth, (void*)&servo, trackPriority, NULL);
-  //xTaskCreate(LogTask, searchPCName, searchStackDepth, NULL, searchPriority, NULL);
+  xTaskCreate(LogTask, searchPCName, searchStackDepth, NULL, searchPriority, NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */

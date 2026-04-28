@@ -90,17 +90,11 @@ uint16_t GetStartAngleDeg(int16_t angleDeg, int16_t stepAngleDeg) {
 
 	int16_t startAngleDeg = angleDeg - stepAngleDeg;
 
-	// cw
-	if (angleDirection > 0) {
-		return max(startAngleDeg, 0);
-	}
+	startAngleDeg = max(startAngleDeg, 0);
 
-	// ccw
-	if (angleDirection < 0) {
-		return min(startAngleDeg, 180);
-	}
+	startAngleDeg = min(startAngleDeg, 180);
 
-	return 0;
+	return startAngleDeg;
 }
 
 void GetTrackRange(int16_t angleDeg, int16_t* minAngleDegPtr, int16_t* maxAngleDegPtr) {

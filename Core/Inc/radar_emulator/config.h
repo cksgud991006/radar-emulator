@@ -19,6 +19,7 @@
 #define MAX_SEARCH_ANGLE_DEG			180
 #define MOTION_SMOOTHING_FACTOR			1
 #define SENSOR_SCAN_DELAY_MS			140
+#define TRACK_SEARCH_REVISITS			3
 
 typedef struct {
     TIM_HandleTypeDef* timerHandle; // e.g., &htim2
