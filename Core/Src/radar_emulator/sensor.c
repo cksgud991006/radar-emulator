@@ -16,6 +16,16 @@ void InitRadarEmulatorSensor() {
 	VL53L1X_ERROR sensorStatus;
 
 	sensorStatus = VL53L1X_SensorInit(VL53L1X_ADDRESS);
+	if (sensorStatus != 0) {
+		return;
+	}
+
+	uint8_t sensorState = 0;
+	while (sensorState == 0) {
+		sensorStatus = VL53L1X_BootState(VL53L1X_ADDRESS, &sensorState);
+		HAL_Delay(2); // 1.2ms ~ 1.5ms to reach booted state
+	}
+
 	sensorStatus = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
 	sensorStatus = VL53L1X_SetDistanceMode(VL53L1X_ADDRESS, sensorModeDefault);
 	sensorStatus = VL53L1X_SetTimingBudgetInMs(VL53L1X_ADDRESS, sensorTimingBudgetMs);
