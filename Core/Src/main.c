@@ -121,13 +121,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   InitTask();
-  /*
-  uint8_t sensorState = 0;
-  while (sensorState == 0) {
-	  sensorStatus = VL53L1X_BootState(VL53L1X_ADDRESS, &sensorState);
-	  HAL_Delay(2); // 1.2ms ~ 1.5ms to reach booted state
-  }
-  */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -143,13 +137,23 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  //InitRadarEmulatorSensor();
+  // Add this to your init section
+
+  uint8_t sensorState = 0;
+  	while (sensorState == 0) {
+  	  sensorStatus = VL53L1X_BootState(VL53L1X_ADDRESS, &sensorState);
+  	  HAL_Delay(2); // 1.2ms ~ 1.5ms to reach booted state
+  	}
+
+
+
+  InitRadarEmulatorSensor();
 
   HAL_TIM_PWM_Start(servo.timerHandle, servo.channel);
 
   xTaskCreate(SearchTask, searchPCName, searchStackDepth, (void*)&servo, searchPriority, NULL);
   xTaskCreate(TrackTask, trackPCName, trackStackDepth, (void*)&servo, trackPriority, NULL);
-  xTaskCreate(LogTask, searchPCName, searchStackDepth, NULL, searchPriority, NULL);
+  //xTaskCreate(LogTask, searchPCName, searchStackDepth, NULL, searchPriority, NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */

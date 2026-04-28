@@ -14,10 +14,3 @@ void SetServoAngle(TIM_HandleTypeDef* htim, uint32_t channel, int16_t angleDeg) 
 
 	__HAL_TIM_SET_COMPARE(htim, channel, pulseLength);
 }
-
-uint32_t CalculateServoDelay(int16_t angleDeg) {
-	// servo operates transit speed of 2 ms per degree
-	uint32_t ticksMs = abs(angleDeg * 2);
-
-	return ticksMs;
-}

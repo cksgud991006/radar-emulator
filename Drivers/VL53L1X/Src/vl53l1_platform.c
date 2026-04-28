@@ -16,7 +16,7 @@
 #include <math.h>
 #include "stm32f4xx_hal.h"
 
-static const uint32_t timeout = 100;
+static const uint32_t timeout = 10;
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -76,9 +76,9 @@ int8_t VL53L1_WrDWord(uint16_t dev, uint16_t index, uint32_t data) {
 	
 	uint8_t buffer[4];
 	buffer[0] = (uint8_t) (data >> 24);
-	buffer[0] = (uint8_t) ((data >> 16) & 0x00ff);
-	buffer[0] = (uint8_t) ((data >> 8) & 0x00ff);
-	buffer[0] = (uint8_t) (data & 0x00ff);
+	buffer[1] = (uint8_t) ((data >> 16) & 0x00ff);
+	buffer[2] = (uint8_t) ((data >> 8) & 0x00ff);
+	buffer[3] = (uint8_t) (data & 0x00ff);
 
 	status = VL53L1_WriteMulti(dev, index, buffer, 4);
 
