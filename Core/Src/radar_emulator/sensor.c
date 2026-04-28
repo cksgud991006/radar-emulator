@@ -7,13 +7,18 @@
 
 #include "radar_emulator/sensor.h"
 #include "VL53L1X_api.h"
+#include "radar_emulator/config.h"
 
-static const uint16_t sensorModeDefault = 2;
-static const uint16_t sensorTimingBudgetMs = 140;
-
-void InitRadarEmulatorSensor() {
+void InitRadarEmulatorSensor(GPIO_TypeDef* port, uint16_t pin) {
 
 	VL53L1X_ERROR sensorStatus;
+
+	// hardware reset (Replace GPIO_PORT/PIN with your actual connections)
+	HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
+	HAL_Delay(10);
+
 
 	sensorStatus = VL53L1X_SensorInit(VL53L1X_ADDRESS);
 	if (sensorStatus != 0) {
@@ -27,8 +32,8 @@ void InitRadarEmulatorSensor() {
 	}
 
 	sensorStatus = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
-	sensorStatus = VL53L1X_SetDistanceMode(VL53L1X_ADDRESS, sensorModeDefault);
-	sensorStatus = VL53L1X_SetTimingBudgetInMs(VL53L1X_ADDRESS, sensorTimingBudgetMs);
+	sensorStatus = VL53L1X_SetDistanceMode(VL53L1X_ADDRESS, SENSOR_MODE_DEFAULT);
+	sensorStatus = VL53L1X_SetTimingBudgetInMs(VL53L1X_ADDRESS, SENSOR_SCAN_DELAY_MS);
 	sensorStatus = VL53L1X_StartRanging(VL53L1X_ADDRESS);
 }
 

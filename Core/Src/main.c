@@ -112,6 +112,8 @@ int main(void)
 			.timerHandle = &htim2,
 			.channel = TIM_CHANNEL_1
 	};
+
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -137,7 +139,7 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  InitRadarEmulatorSensor();
+  InitRadarEmulatorSensor(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin);
 
   HAL_TIM_PWM_Start(servo.timerHandle, servo.channel);
 

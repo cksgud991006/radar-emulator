@@ -108,6 +108,10 @@ void SearchTask(void *pvParameters) {
 			}
 		}
 
+		else {
+			status = xSemaphoreGive(xSearchPermit);
+		}
+
 		// The task blocks every servo transit delay
 		vTaskDelay(delay);
 	}
