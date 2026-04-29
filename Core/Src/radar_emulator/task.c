@@ -18,10 +18,10 @@
 #include "VL53L1X_api.h"
 #include "radar_emulator/angle.h"
 
-QueueHandle_t xTaskQueue;
-QueueHandle_t xLogQueue;
-SemaphoreHandle_t xSearchPermit;
-SemaphoreHandle_t xTrackPermit;
+static QueueHandle_t xTaskQueue;
+static QueueHandle_t xLogQueue;
+static SemaphoreHandle_t xSearchPermit;
+static SemaphoreHandle_t xTrackPermit;
 
 void InitTask() {
 	xTaskQueue = xQueueCreate(TASK_BUFFER_SIZE, sizeof(TargetData));
@@ -34,7 +34,7 @@ void InitTask() {
 	}
 }
 
-BaseType_t ProcessAction(TargetData* targetData) {
+static BaseType_t ProcessAction(TargetData* targetData) {
 
 	//VL53L1X_ERROR status;
 	BaseType_t status;
