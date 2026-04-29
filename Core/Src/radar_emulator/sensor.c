@@ -48,7 +48,7 @@ uint16_t GetMaxRange(uint16_t mode) {
 			break;
 		// long distance mode
 		case 2:
-			distanceMm = 100; // ~4.0m
+			distanceMm = 4000; // ~4.0m
 			break;
 
 		default: distanceMm = 1300; // ~1.3m

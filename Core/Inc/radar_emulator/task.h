@@ -13,13 +13,11 @@
 
 void InitTask();
 
-BaseType_t ProcessAction(TargetData* targetData);
-
 void SearchTask(void *pvParameters);
 
 void TrackTask(void *pvParameters);
 
-void LogTask(void);
+void LogTask(void *pvParameters);
 
 void DeadlineCallback(void);
 

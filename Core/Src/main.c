@@ -96,13 +96,13 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	const char* searchPCName = "generalSearch";
 	const char* trackPCName = "trackSearch";
+	const char* logPCName = "logging";
 	const uint16_t searchStackDepth = 256;
 	const uint16_t trackStackDepth = 256;
 	const uint16_t logStackDepth = 512;
 	const UBaseType_t searchPriority = 1;
 	const UBaseType_t trackPriority = 2;
 	const UBaseType_t logPriority = 1;
-	VL53L1X_ERROR sensorStatus;
 
 	// system clock = 84MHz
 	// timer = 16 bit register
@@ -146,7 +146,7 @@ int main(void)
 
   xTaskCreate(SearchTask, searchPCName, searchStackDepth, (void*)&servo, searchPriority, NULL);
   xTaskCreate(TrackTask, trackPCName, trackStackDepth, (void*)&servo, trackPriority, NULL);
-  xTaskCreate(LogTask, searchPCName, logStackDepth, NULL, searchPriority, NULL);
+  xTaskCreate(LogTask, logPCName, logStackDepth, NULL, logPriority, NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */

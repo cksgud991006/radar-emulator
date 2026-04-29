@@ -187,7 +187,7 @@ void TrackTask(void *pvParameters) {
 	}
 }
 
-void LogTask(void) {
+void LogTask(void *pvParameters) {
 
 	LogMessage_t log;
 
