@@ -78,7 +78,7 @@ graph TD
 
 1. **Clone** the repo.
 2. **Import** the project into STM32CubeIDE (File -> Import -> Existing Projects into Workspace).
-3. **Build*: Click the Hammer icon.
+3. **Build**: Click the Hammer icon.
 4. **Flash**: Connect your ST-LINK and click the Play/Debug icon.
 
 ## Pin Configuration
