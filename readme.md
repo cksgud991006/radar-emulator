@@ -4,15 +4,15 @@ Object in field detector using FreeRTOS on STM32F4 Discovery.
 ```mermaid
 graph TD
     %% Task Definitions
-    subgraph "High Priority (80% CPU Budget Group)"
+    subgraph "High Priority"
         T2[Track Task]
     end
 
-    subgraph "Normal Priority (80% CPU Budget Group)"
+    subgraph "Normal Priority"
         T1[Search Task]
     end
 
-    subgraph "Low Priority (20% CPU Budget Group)"
+    subgraph "Low Priority"
         T3[Logging Task]
     end
 
