@@ -21,15 +21,15 @@
 static QueueHandle_t xTaskQueue;
 static QueueHandle_t xLogQueue;
 static SemaphoreHandle_t xSearchPermit;
-static SemaphoreHandle_t xTrackPermit;
+static SemaphoreHandle_t xSearchPermit;
 
 void InitTask() {
 	xTaskQueue = xQueueCreate(TASK_BUFFER_SIZE, sizeof(TargetData));
 	xLogQueue = xQueueCreate(LOG_BUFFER_SIZE, sizeof(LogMessage_t));
 	xSearchPermit = xSemaphoreCreateBinary();
-	xTrackPermit = xSemaphoreCreateBinary();
+	xSearchPermit = xSemaphoreCreateBinary();
 
-	if (xSearchPermit != NULL && xTrackPermit != NULL) {
+	if (xSearchPermit != NULL && xSearchPermit != NULL) {
 		xSemaphoreGive(xSearchPermit);
 	}
 }
@@ -75,21 +75,22 @@ void SearchTask(void *pvParameters) {
 
 	for(;;) {
 
+		// ------------------ START OF CRITICAL SECTION ------------------
 		xSemaphoreTake(xSearchPermit, portMAX_DELAY);
+
+		SetServoAngle(htim, channel, angleDeg);
 
 		Log_Format(&msg, "Radar Search: Angle=%d, Dist=%d", angleDeg, distanceMm);
 
 		xQueueSend(xLogQueue, &msg, 0);
 
-		SetServoAngle(htim, channel, angleDeg);
+		vTaskDelay(delay);
 
 		status = VL53L1X_CheckForDataReady(VL53L1X_ADDRESS, &isDataReady);
 
 		if (isDataReady) {
 
 			status = VL53L1X_GetDistance(VL53L1X_ADDRESS, &distanceMm);
-
-			status = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
 
 			TargetData targetData = {
 					.angleDeg = angleDeg,
@@ -99,21 +100,14 @@ void SearchTask(void *pvParameters) {
 
 			GetNextAngles(&angleDeg, &stepAngleDeg, MIN_SEARCH_ANGLE_DEG, MAX_SEARCH_ANGLE_DEG);
 
-			if (ProcessAction(&targetData)) {
-				status = xSemaphoreGive(xTrackPermit);
-			}
+			ProcessAction(&targetData);
 
-			else {
-				status = xSemaphoreGive(xSearchPermit);
-			}
 		}
 
-		else {
-			status = xSemaphoreGive(xSearchPermit);
-		}
+		status = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
 
-		// The task blocks every servo transit delay
-		vTaskDelay(delay);
+		xSemaphoreGive(xSearchPermit);
+		// ------------------- END OF CRITICAL SECTION -------------------
 	}
 }
 
@@ -136,8 +130,6 @@ void TrackTask(void *pvParameters) {
 	TargetData targetData;
 
 	for(;;) {
-
-		status = xSemaphoreTake(xTrackPermit, portMAX_DELAY);
 
 		status = xQueueReceive(xTaskQueue, &targetData, portMAX_DELAY);
 
@@ -162,11 +154,17 @@ void TrackTask(void *pvParameters) {
 		for (int revisit=0; revisit < TRACK_SEARCH_REVISITS; ++revisit) {
 
 			for (int s=0; s<TRACK_SEARCH_STEPS; ++s) {
+
+				// ------------------ START OF CRITICAL SECTION ------------------
+				status = xSemaphoreTake(xSearchPermit, portMAX_DELAY);
+
 				SetServoAngle(htim, channel, angleDeg);
 
 				Log_Format(&msg, "Target Found: Angle=%d, Dist=%d", angleDeg, distanceMm);
 
 				xQueueSend(xLogQueue, &msg, 0);
+
+				vTaskDelay(delay);
 
 				status = VL53L1X_CheckForDataReady(VL53L1X_ADDRESS, &isDataReady);
 
@@ -174,16 +172,17 @@ void TrackTask(void *pvParameters) {
 
 					sensorStatus = VL53L1X_GetDistance(VL53L1X_ADDRESS, &distanceMm);
 
-					status = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
-
 					GetNextAngles(&angleDeg, &stepAngleDeg, minRangeDeg, maxRangeDeg);
+
 				}
-				// The task blocks every servo transit delay
-				vTaskDelay(delay);
+
+				status = VL53L1X_ClearInterrupt(VL53L1X_ADDRESS);
+
+				status = xSemaphoreGive(xSearchPermit);
+				// ------------------- END OF CRITICAL SECTION -------------------
+
 			}
 		}
-
-		xSemaphoreGive(xSearchPermit);
 	}
 }
 
