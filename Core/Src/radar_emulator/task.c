@@ -21,13 +21,11 @@
 static QueueHandle_t xTaskQueue;
 static QueueHandle_t xLogQueue;
 static SemaphoreHandle_t xSearchPermit;
-static SemaphoreHandle_t xSearchPermit;
 
 void InitTask() {
 	xTaskQueue = xQueueCreate(TASK_BUFFER_SIZE, sizeof(TargetData));
 	xLogQueue = xQueueCreate(LOG_BUFFER_SIZE, sizeof(LogMessage_t));
-	xSearchPermit = xSemaphoreCreateBinary();
-	xSearchPermit = xSemaphoreCreateBinary();
+	xSearchPermit = xSemaphoreCreateMutex();
 
 	if (xSearchPermit != NULL && xSearchPermit != NULL) {
 		xSemaphoreGive(xSearchPermit);
